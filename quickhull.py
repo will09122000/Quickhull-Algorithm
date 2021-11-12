@@ -1,79 +1,85 @@
-class Point:
+import csv
+
+from point import Point
+from helpers import locate_side, distance_to_line
+
+def read_points_file(file_name):
     """
-    Define the class of a 2D point.
     """
-    def __init__(self, x, y):
-        self.x = x  # The coordinate on x-axis.
-        self.y = y  # The coordinate on y-axis.
-        #self.label = label  # The name of the point.
+    points = []
+    with open(file_name) as points_file:
+        points_reader = csv.reader(points_file)
+        for point in points_reader:
+            x, y = float(point[0]), float(point[1])
+            label = point[2]
+            points.append(Point(x, y, label))
 
-def locate_side(point_1, point_2, point):
-    val = (point.y - point_1.y) * (point_2.x - point_1.x) - (point_2.y - point_1.y) * (point.x - point_1.x)
+    if (len(points) < 3):
+        exit('Convex solution not possible, there must be at least 3 points.')
 
-    if val > 0:
-        return 1
-    elif val < 0:
-        return -1
-    else:
-        return 0
+    return points
 
-def distance_to_line(point_1, point_2, point):
-    return abs((point.y - point_1.y) * (point_2.x - point_1.x) - (point_2.y - point_1.y) * (point.x - point_1.x))
+def quickhull(solution, num_points):
+    """
+    """
 
-def quickhull(points, n, point_1, point_2, side):
+    # The solutuion by the quickhull algorithm is stored as a set of points.
+    solution = set()
+
+    left_point_index, right_point_index = locate_starting_points(points, num_points)
+
+    add_point(points, num_points, points[left_point_index], points[right_point_index], solution, 1)
+    add_point(points, num_points, points[left_point_index], points[right_point_index], solution, -1)
+
+    return solution
+
+def locate_starting_points(points, num_points):
+    """
+    """
+    left_point_index = 0
+    right_point_index = 0
+
+    for i in range(0, num_points):
+        if (points[i].x < points[left_point_index].x):
+            left_point_index = i
+        if (points[i].x > points[right_point_index].x):
+            right_point_index = i
+
+    return left_point_index, right_point_index
+
+def add_point(points, num_points, point_1, point_2, solution, side):
+    """
+    """
     ind = -1
     max_distance = 0
 
-    for i in range(0, n):
-        temp = distance_to_line(point_1, point_2, points[i])
+    for i in range(0, num_points):
+        point_distance = distance_to_line(point_1, point_2, points[i])
 
-        if (locate_side(point_1, point_2, points[i]) == side and temp > max_distance):
+        if (locate_side(point_1, point_2, points[i]) == side and point_distance > max_distance):
             ind = i
-            max_distance = temp
+            max_distance = point_distance
 
     if ind == -1:
-        hull.add((point_1.x, point_1.y))
-        hull.add((point_2.x, point_2.y))
+        solution.add((point_1.x, point_1.y))
+        solution.add((point_2.x, point_2.y))
         return
 
-    quickhull(points, n, points[ind], point_1, -locate_side(points[ind], point_1, point_2))
-    quickhull(points, n, points[ind], point_2, -locate_side(points[ind], point_2, point_1))
+    add_point(points, num_points, points[ind], point_1, solution, -locate_side(points[ind], point_1, point_2))
+    add_point(points, num_points, points[ind], point_2, solution, -locate_side(points[ind], point_2, point_1))
 
-def locate_starting_points(points, n):
-    min_x = 0
-    max_x = 0
+if __name__ == '__main__':
 
-    for i in range(1, n):
-        if (points[i].x < points[min_x].x):
-            min_x = i
-        if (points[i].x > points[max_x].x):
-            max_x = i
+    # Points read from a file and stored in a list of Point objects.
+    points = read_points_file('points.csv')
 
-    return min_x, max_x
+    # Determines the number of points in the set. Calculated here as this number is used
+    # many times during the quickhull algorithm. 
+    num_points = len(points)
 
-def display_hull(hull, n):
-    if (n < 3):
-        print('Convex hull not possible.')
+    # Quickhull function returns the solution as a set of points.
+    solution = quickhull(points, num_points)
 
-    min_x, max_x = locate_starting_points(points, n)
-
-    quickhull(points, n, points[min_x], points[max_x], 1)
-
-    quickhull(points, n, points[min_x], points[max_x], -1)
-
-    print('The points in Convex Hull are: ')
-    for point in hull:
+    print('The points in Convex solution are: ')
+    for point in solution:
         print(point[0], point[1])
-
-def create_point_objects(points):
-    point_objects = []
-    for point in points:
-        point_objects.append(Point(point[0], point[1]))
-
-    return point_objects
-
-hull = set()
-points = [[0, 3], [1, 1], [2, 2], [4, 4], [0, 0], [1, 2], [3, 1], [3, 3]]
-points = create_point_objects(points)
-n = len(points)
-display_hull(hull, n)
