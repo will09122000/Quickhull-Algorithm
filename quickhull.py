@@ -12,7 +12,7 @@ def read_points_file(file_name):
         for point in points_reader:
             x, y = float(point[0]), float(point[1])
             label = point[2]
-            points.append(Point(x, y, label))
+            points.append(Point(x, y))
 
     if (len(points) < 3):
         exit('Convex solution not possible, there must be at least 3 points.')
@@ -52,13 +52,18 @@ def add_point(points, num_points, point_1, point_2, solution, side):
     """
     ind = -1
     max_distance = 0
+    global iterations
 
-    for i in range(0, num_points):
-        point_distance = distance_to_line(point_1, point_2, points[i])
+    for i, point in enumerate(points):
+        iterations += 1
+        point_distance = distance_to_line(point_1, point_2, point)
 
-        if (locate_side(point_1, point_2, points[i]) == side and point_distance > max_distance):
+        if locate_side(point_1, point_2, point) == side and point_distance > max_distance:
             ind = i
             max_distance = point_distance
+        #elif locate_side(point_1, point_2, point) == side:
+            #points.remove(point)
+            #print(point.x, point.y)
 
     if ind == -1:
         solution.add((point_1.x, point_1.y))
@@ -68,10 +73,22 @@ def add_point(points, num_points, point_1, point_2, solution, side):
     add_point(points, num_points, points[ind], point_1, solution, -locate_side(points[ind], point_1, point_2))
     add_point(points, num_points, points[ind], point_2, solution, -locate_side(points[ind], point_2, point_1))
 
+iterations = 0
+
+def generate_points():
+    import random
+    points = []
+    for i in range(0, 100000):
+        x, y = random.randint(0, 100), random.randint(0, 100)
+        points.append(Point(x, y))
+    
+    return points
+
 if __name__ == '__main__':
 
     # Points read from a file and stored in a list of Point objects.
-    points = read_points_file('points.csv')
+    # points = read_points_file('points.csv')
+    points = generate_points()
 
     # Determines the number of points in the set. Calculated here as this number is used
     # many times during the quickhull algorithm. 
@@ -83,3 +100,5 @@ if __name__ == '__main__':
     print('The points in Convex solution are: ')
     for point in solution:
         print(point[0], point[1])
+
+    print(iterations)
