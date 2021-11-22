@@ -75,7 +75,7 @@ def add_point(points, num_points, point_1, point_2, solution, side):
 def generate_points():
     import random
     points = []
-    for _ in range(0, 100):
+    for _ in range(0, 20):
         x, y = random.randint(0, 100), random.randint(0, 100)
         points.append(Point(x, y))
 
