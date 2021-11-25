@@ -60,9 +60,6 @@ def add_point(points, num_points, point_1, point_2, solution, side):
         if locate_side(point_1, point_2, point) == side and point_distance > max_distance:
             ind = i
             max_distance = point_distance
-        #elif locate_side(point_1, point_2, point) == side:
-            #points.remove(point)
-            #print(point.x, point.y)
 
     if ind == -1:
         solution.add((point_1.x, point_1.y))
