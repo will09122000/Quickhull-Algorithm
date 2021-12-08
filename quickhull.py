@@ -1,4 +1,3 @@
-
 from helpers import *
 
 def quickhull(points, num_points):
